@@ -187,6 +187,7 @@ enum {
   kStreamSerial = 0,
   kStreamEEProm,
   kStreamEEPromX,
+  kStreamSercom,
   kStreamFile
 };
 static unsigned char inStream = kStreamSerial;
@@ -264,6 +265,10 @@ const static unsigned char keywords[] PROGMEM = {
   'E', 'P', 'O', 'K', 'E' + 0x80,
   'E', 'P', 'E', 'E', 'K' + 0x80,
 
+  'S', 'E', 'R', 'C', 'O', 'M' + 0x80,
+  'S', 'E', 'R', 'I', 'N' + 0x80,
+  'S', 'E', 'R', 'L', 'O', 'A', 'D' + 0x80,
+
   'D', 'E', 'L', 'E', 'T', 'E' + 0x80,
   0
 };
@@ -305,6 +310,9 @@ enum {
   KW_XPEEK,
   KW_EPOKE,
   KW_EPEEK,
+  KW_SERCOM,
+  KW_SERIN,
+  KW_SERLOAD,
   KW_DELETE,
   KW_DEFAULT /* always the final one*/
 };
@@ -401,6 +409,7 @@ static unsigned char breakcheck(void);
 void setup()
 {
 
+  Serial1.begin(9600);
   //TV.begin(PAL, 752, 504);
   TV.begin(PAL, 720, 480);
   if(FONTS == 6) TV.select_font(font6x8);
@@ -679,6 +688,30 @@ void printnum(int num)
   }
 }
 
+void sendnum(int num)
+{
+  int digits = 0;
+
+  if (num < 0)
+  {
+    num = -num;
+     Serial1.print('-');
+  }
+  do {
+    pushb(num % 10 + '0');
+    num = num / 10;
+    digits++;
+  }
+  while (num > 0);
+
+  while (digits > 0)
+  {
+    Serial1.print((char)popb());
+    digits--;
+  }
+  Serial1.println();
+}
+
 void printnumX(int num)
 {
   int digits = 0;
@@ -766,6 +799,35 @@ static unsigned char print_quoted_string(void)
     cursorposx = cursorposx + 6;
   }
   txtpos++; // Skip over the last delimiter
+  //cursorposx = cursorposx + 6;
+  return 1;
+}
+
+/***************************************************************************/
+static unsigned char serialsend_quoted_string(void)
+{
+  int i = 0;
+  unsigned char delim = *txtpos;
+  if (delim != '"' && delim != '\'')
+    return 0;
+  txtpos++;
+
+  // Check we have a closing delimiter
+  while (txtpos[i] != delim)
+  {
+    if (txtpos[i] == NL)
+      return 0;
+    i++;
+  }
+
+  // Print the characters
+  while (*txtpos != delim)
+  {
+    Serial1.print(char(*txtpos));
+    txtpos++;
+  }
+  txtpos++; // Skip over the last delimiter
+  Serial1.println("");
   //cursorposx = cursorposx + 6;
   return 1;
 }
@@ -1438,6 +1500,12 @@ interperateAtTxtpos:
       goto epoke;
     case KW_EPEEK:
       goto epeek;
+    case KW_SERCOM:
+      goto sercom; 
+    case KW_SERIN:
+      goto serin;
+    case KW_SERLOAD:
+      goto serload;
     case KW_DELETE:
       goto deletef;     
     case KW_DEFAULT:
@@ -2159,6 +2227,97 @@ dwrite:
     }
   }
   goto run_next_statement;
+
+sercom:
+  {
+  if (*txtpos == ':' )
+  {
+    line_terminator();
+    txtpos++;
+    //cursorposx = cursorposx + 6;
+    goto run_next_statement;
+  }
+  if (*txtpos == NL)
+  {
+    goto execnextline;
+  }
+
+  while (1)
+  {
+    ignore_blanks();
+    if (serialsend_quoted_string())
+    {
+      ;
+    }
+    else if (*txtpos == '"' || *txtpos == '\'')
+      goto SyntaxError;
+    else
+    {
+      short int e;
+      expression_error = 0;
+      e = expression();
+      if (expression_error)
+        goto invalidexpr;
+      sendnum(e);
+    }
+
+    // At this point we have three options, a comma or a new line
+    if (*txtpos == ',')
+      txtpos++;	// Skip the comma and move onto the next
+    else if (txtpos[0] == ';' && (txtpos[1] == NL || txtpos[1] == ':'))
+    {
+      txtpos++; // This has to be the end of the print - no newline
+     // cursorposx = cursorposx + 6;
+      break;
+    }
+    else if (*txtpos == NL || *txtpos == ':')
+    {
+      //line_terminator();	// The end of the print statement, not needed as serial send, if enabled, unneccessary empty line is added after sercom send
+      break;
+    }
+    else
+      goto SyntaxError;
+  }
+      //Serial1.println("Hello world!");
+  }
+  goto run_next_statement;
+
+serin:
+  {
+    const int numChars = 32;
+    char receivedChars[numChars];   // an array to store the received data
+    int charIndex = 0; // Index for storing characters in the array
+
+    while (!Serial1.available()) {} // Wait until data is available
+
+    while (true) { // Loop indefinitely
+      char incomingChar = Serial1.read(); // Read the incoming character
+
+      if (incomingChar == '\r' || incomingChar == '\n') { // Check for CR or LF
+        receivedChars[charIndex] = '\0'; // Null-terminate the string
+        break; // Exit the loop if CR or LF is received
+      } else {
+        receivedChars[charIndex] = incomingChar; // Store the received character
+        charIndex++; // Increment the index
+        outchar( incomingChar );
+        if (charIndex >= numChars) { // Check if the buffer is full
+          break; // Exit the loop if buffer is full
+        }
+      }
+
+      while (!Serial1.available()) {} // Wait until data is available
+    }
+     line_terminator();
+  }
+  goto run_next_statement;
+
+serload:
+ // clear the program
+  program_end = program_start;
+
+  inStream = kStreamSercom;
+  inhibitOutput = true;
+  goto warmstart;
 //#else
 //pinmode: // PINMODE <pin>, I/O
 //awrite: // AWRITE <pin>,val
@@ -2947,6 +3106,16 @@ static int inchar()
 
       case ( kStreamEEPromX ):
       v = disk1.read_byte( eeposX++ );
+      if ( v == '\0' ) {
+        goto inchar_loadfinish;
+      }
+      return v;
+      break;
+
+    case ( kStreamSercom ):
+      while (!Serial1.available()) {} // Wait until data is available
+      v = Serial1.read(); // Read the incoming character
+
       if ( v == '\0' ) {
         goto inchar_loadfinish;
       }
