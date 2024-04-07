@@ -32,7 +32,7 @@
 #define false                 0
 #define ECHO_CHARS            1
 #define CURSOR_BLINK_PERIOD   500       // ms
-#define XEEPROM_TYP           1         // 0=16bit, 1=24bit
+#define XEEPROM_TYP           0         // 0=16bit, 1=24bit
 #define XEEPROM_SIZE          8192
 #define ENABLE_FILEIO         1         // enables LOAD, SAVE, FILES for SD card (adds 9k of usage)
 #define ENABLE_AUTORUN        0         //if there's FileIO, and a file "autorun.bas" then it will load it and run it when starting up
@@ -1704,7 +1704,7 @@ xload:
 xpoke:
 {
     unsigned int x;
-    byte z;
+    int z;
   
     //Get the x val
     expression_error = 0;
@@ -1731,7 +1731,7 @@ xpoke:
 
 xpeek:
  {
-    byte z;
+    int z;
     short int value;
     short int *var;
     
