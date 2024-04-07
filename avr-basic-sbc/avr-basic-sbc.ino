@@ -265,8 +265,8 @@ const static unsigned char keywords[] PROGMEM = {
   'E', 'P', 'O', 'K', 'E' + 0x80,
   'E', 'P', 'E', 'E', 'K' + 0x80,
 
-  'S', 'E', 'R', 'C', 'O', 'M' + 0x80,
-  'S', 'E', 'R', 'I', 'N' + 0x80,
+  'S', 'E', 'R', 'P', 'R', 'I', 'N', 'T' + 0x80,
+  'S', 'E', 'R', 'R', 'E',  'A', 'D' + 0x80,
   'S', 'E', 'R', 'L', 'O', 'A', 'D' + 0x80,
 
   'D', 'E', 'L', 'E', 'T', 'E' + 0x80,
@@ -310,8 +310,8 @@ enum {
   KW_XPEEK,
   KW_EPOKE,
   KW_EPEEK,
-  KW_SERCOM,
-  KW_SERIN,
+  KW_SERPRINT,
+  KW_SERREAD,
   KW_SERLOAD,
   KW_DELETE,
   KW_DEFAULT /* always the final one*/
@@ -1500,10 +1500,10 @@ interperateAtTxtpos:
       goto epoke;
     case KW_EPEEK:
       goto epeek;
-    case KW_SERCOM:
-      goto sercom; 
-    case KW_SERIN:
-      goto serin;
+    case KW_SERPRINT:
+      goto serprint; 
+    case KW_SERREAD:
+      goto serread;
     case KW_SERLOAD:
       goto serload;
     case KW_DELETE:
@@ -2228,7 +2228,7 @@ dwrite:
   }
   goto run_next_statement;
 
-sercom:
+serprint:
   {
   if (*txtpos == ':' )
   {
@@ -2282,7 +2282,7 @@ sercom:
   }
   goto run_next_statement;
 
-serin:
+serread:
   {
     const int numChars = 32;
     char receivedChars[numChars];   // an array to store the received data
