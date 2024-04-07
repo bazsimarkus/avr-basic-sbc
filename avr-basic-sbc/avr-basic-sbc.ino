@@ -224,6 +224,7 @@ const static unsigned char keywords[] PROGMEM = {
   'R', 'E', 'M' + 0x80,
   'F', 'O', 'R' + 0x80,
   'I', 'N', 'P', 'U', 'T' + 0x80,
+  'I', 'N', 'C', 'H', 'R', 'N' + 0x80,
   'P', 'R', 'I', 'N', 'T' + 0x80,
   'P', 'O', 'K', 'E' + 0x80,
   'S', 'T', 'O', 'P' + 0x80,
@@ -286,7 +287,7 @@ enum {
   KW_GOTO, KW_GOSUB, KW_RETURN,
   KW_REM,
   KW_FOR,
-  KW_INPUT, KW_PRINT,
+  KW_INPUT, KW_INCHRN, KW_PRINT,
   KW_POKE,
   KW_STOP, KW_BYE,
   KW_FILES,
@@ -1438,6 +1439,8 @@ interperateAtTxtpos:
       goto forloop;
     case KW_INPUT:
       goto input;
+    case KW_INCHRN:
+      goto inchrn;
     case KW_PRINT:
     case KW_QMARK:
       goto print;
@@ -1846,6 +1849,31 @@ inputagain:
     value = expression();
     if (expression_error)
       goto inputagain;
+    ((short int *)variables_begin)[var - 'A'] = value;
+    txtpos = tmptxtpos;
+
+    goto run_next_statement;
+  }
+inchrn:
+  cursorOn = true;
+  {
+    unsigned char var;
+    int value;
+    ignore_blanks();
+    //if (*txtpos < (char) (-128) || *txtpos > (char) (-125)) {
+    if (*txtpos < 'A' || *txtpos > 'Z') {
+      goto invalidexpr;
+    }
+    //}
+    var = *txtpos;
+    txtpos++;
+    ignore_blanks();
+    if (*txtpos != NL && *txtpos != ':')
+      goto SyntaxError;
+inchrnagain:
+    tmptxtpos = txtpos;
+    while(!keyboard.available()) {}
+    value = keyboard.read() - '0';
     ((short int *)variables_begin)[var - 'A'] = value;
     txtpos = tmptxtpos;
 
