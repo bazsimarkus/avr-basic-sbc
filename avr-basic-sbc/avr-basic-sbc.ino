@@ -144,6 +144,8 @@ bool blink;
 unsigned long lastBlinkedTime = 0;
 bool cursorOn;
 
+bool isSerial1Open = false;
+
 // EEprom
 int eepos = 0;
 long eeposX = 0;
@@ -265,6 +267,8 @@ const static unsigned char keywords[] PROGMEM = {
   'E', 'P', 'O', 'K', 'E' + 0x80,
   'E', 'P', 'E', 'E', 'K' + 0x80,
 
+  'S', 'E', 'R', 'O', 'P', 'E', 'N' + 0x80,
+  'S', 'E', 'R', 'C', 'L', 'O', 'S', 'E' + 0x80,
   'S', 'E', 'R', 'P', 'R', 'I', 'N', 'T' + 0x80,
   'S', 'E', 'R', 'R', 'E',  'A', 'D' + 0x80,
   'S', 'E', 'R', 'L', 'O', 'A', 'D' + 0x80,
@@ -310,6 +314,8 @@ enum {
   KW_XPEEK,
   KW_EPOKE,
   KW_EPEEK,
+  KW_SEROPEN,
+  KW_SERCLOSE,
   KW_SERPRINT,
   KW_SERREAD,
   KW_SERLOAD,
@@ -409,7 +415,6 @@ static unsigned char breakcheck(void);
 void setup()
 {
 
-  Serial1.begin(9600);
   //TV.begin(PAL, 752, 504);
   TV.begin(PAL, 720, 480);
   if(FONTS == 6) TV.select_font(font6x8);
@@ -1500,6 +1505,10 @@ interperateAtTxtpos:
       goto epoke;
     case KW_EPEEK:
       goto epeek;
+    case KW_SEROPEN:
+      goto seropen; 
+    case KW_SERCLOSE:
+      goto serclose;
     case KW_SERPRINT:
       goto serprint; 
     case KW_SERREAD:
@@ -2228,6 +2237,20 @@ dwrite:
   }
   goto run_next_statement;
 
+seropen:
+  {
+    Serial1.begin(9600);
+    isSerial1Open = true;
+  }
+  goto run_next_statement;
+
+serclose:
+  {
+    Serial1.end();
+    isSerial1Open = false;
+  }
+  goto run_next_statement;
+
 serprint:
   {
   if (*txtpos == ':' )
@@ -2284,6 +2307,7 @@ serprint:
 
 serread:
   {
+    if(isSerial1Open){
     const int numChars = 32;
     char receivedChars[numChars];   // an array to store the received data
     int charIndex = 0; // Index for storing characters in the array
@@ -2308,15 +2332,18 @@ serread:
       while (!Serial1.available()) {} // Wait until data is available
     }
      line_terminator();
+    }
   }
   goto run_next_statement;
 
 serload:
+  if(isSerial1Open){
  // clear the program
   program_end = program_start;
 
   inStream = kStreamSercom;
   inhibitOutput = true;
+  }
   goto warmstart;
 //#else
 //pinmode: // PINMODE <pin>, I/O
