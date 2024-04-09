@@ -4685,7 +4685,7 @@
   (gr_text "POWER" (at 2.56 14.32) (layer "F.SilkS") (tstamp 9bd246cc-4e07-4ba8-863e-55d2e89efc8a)
     (effects (font (size 1 1) (thickness 0.15)) (justify left bottom))
   )
-  (gr_text "ATMEGA1284P SBC VER 1.1" (at 93.365 44.958 90) (layer "F.SilkS") (tstamp 9dfc11bc-185c-45a4-a6bd-823ecc678199)
+  (gr_text "ATMEGA1284P SBC VER 1.2" (at 93.365 44.958 90) (layer "F.SilkS") (tstamp 9dfc11bc-185c-45a4-a6bd-823ecc678199)
     (effects (font (size 1 1) (thickness 0.15)) (justify left bottom))
   )
   (gr_text "MISO" (at 43.561 10.16 90) (layer "F.SilkS") (tstamp a804fdcd-eb48-4066-9813-9dc37cf7e893)
