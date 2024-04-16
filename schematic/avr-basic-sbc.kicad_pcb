@@ -4500,7 +4500,7 @@
   (gr_text "GND" (at 24.922 2.413 90) (layer "F.SilkS") (tstamp c48b5eb0-8466-4eff-b472-91c6763e4f12)
     (effects (font (size 0.508 0.508) (thickness 0.127)) (justify left bottom))
   )
-  (gr_text "AV VIDEO OUT" (at 39.8 41.529) (layer "F.SilkS") (tstamp d16241fe-280d-45a0-a260-380f6e0e6ff4)
+  (gr_text "AV VIDEO OUT" (at 39.3 41.529) (layer "F.SilkS") (tstamp d16241fe-280d-45a0-a260-380f6e0e6ff4)
     (effects (font (size 1 1) (thickness 0.15)) (justify left bottom))
   )
   (gr_text "ON" (at 40.152 25.4) (layer "F.SilkS") (tstamp d900e425-250f-4e13-8f01-64532b3f1c29)
