@@ -184,6 +184,7 @@ def paste():
 
 def select_all():
     current_tab = notebook.select()
+    current_code_view = notebook.nametowidget(current_tab).winfo_children()[0].winfo_children()[0]
     current_code_view.event_generate("<<SelectAll>>")
 
 def delete():
