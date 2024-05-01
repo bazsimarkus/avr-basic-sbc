@@ -359,6 +359,11 @@ const static unsigned char step_tab[] PROGMEM = {
   0
 };
 
+const static unsigned char then_tab[] PROGMEM = {
+  'T', 'H', 'E', 'N' + 0x80,
+  0
+};
+
 const static unsigned char relop_tab[] PROGMEM = {
   '>', '=' + 0x80,
   '<', '>' + 0x80,
@@ -1416,6 +1421,9 @@ interperateAtTxtpos:
       val = expression();
       if (expression_error || *txtpos == NL)
         goto invalidexpr;
+      scantable(then_tab);
+      if (table_index != 0)
+        goto SyntaxError;
       if (val != 0)
         goto interperateAtTxtpos;
       goto execnextline;
