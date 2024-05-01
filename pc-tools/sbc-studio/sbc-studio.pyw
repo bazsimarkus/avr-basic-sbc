@@ -72,6 +72,7 @@ def new_file():
     new_code_view = CodeView(new_tab, lexer=pygments.lexers.QBasicLexer, color_scheme="monokai")
     new_code_view.pack(side='top', fill="both", expand=True)
     new_code_view['undo'] = True
+    new_code_view.bind("<Button-3>", show_popup) # Bind the popup to the right-click event
     notebook.select(new_tab)
 
 def open_file():
@@ -86,6 +87,7 @@ def open_file():
         new_code_view.delete('1.0', 'end')  # Clear any existing content
         new_code_view.insert('1.0', content)  # Insert the content from the file
         new_code_view['undo'] = True
+        new_code_view.bind("<Button-3>", show_popup) # Bind the popup to the right-click event
         notebook.select(new_tab)
         
 def save_file(event=None):
@@ -156,25 +158,38 @@ def show_popup(event):
     popup.tk_popup(event.x_root, event.y_root)
 
 def undo():
-    code_view.event_generate("<<Undo>>")
+    current_tab = notebook.select()
+    current_code_view = notebook.nametowidget(current_tab).winfo_children()[0].winfo_children()[0]
+    current_code_view.event_generate("<<Undo>>")
 
 def redo():
-    code_view.event_generate("<<Redo>>")
+    current_tab = notebook.select()
+    current_code_view = notebook.nametowidget(current_tab).winfo_children()[0].winfo_children()[0]
+    current_code_view.event_generate("<<Redo>>")
 
 def cut():
-    code_view.event_generate("<<Cut>>")
+    current_tab = notebook.select()
+    current_code_view = notebook.nametowidget(current_tab).winfo_children()[0].winfo_children()[0]
+    current_code_view.event_generate("<<Cut>>")
 
 def copy():
-    code_view.event_generate("<<Copy>>")
+    current_tab = notebook.select()
+    current_code_view = notebook.nametowidget(current_tab).winfo_children()[0].winfo_children()[0]
+    current_code_view.event_generate("<<Copy>>")
 
 def paste():
-    code_view.event_generate("<<Paste>>")
+    current_tab = notebook.select()
+    current_code_view = notebook.nametowidget(current_tab).winfo_children()[0].winfo_children()[0]
+    current_code_view.event_generate("<<Paste>>")
 
 def select_all():
-    code_view.event_generate("<<SelectAll>>")
+    current_tab = notebook.select()
+    current_code_view.event_generate("<<SelectAll>>")
 
 def delete():
-    code_view.event_generate("<<Clear>>")
+    current_tab = notebook.select()
+    current_code_view = notebook.nametowidget(current_tab).winfo_children()[0].winfo_children()[0]
+    current_code_view.event_generate("<<Clear>>")
 
 
 root = tk.Tk()
