@@ -22,7 +22,7 @@ import serial.tools.list_ports
 # Function to list available COM ports
 def list_com_ports():
     com_ports = serial.tools.list_ports.comports()
-    return [port.device for port in com_ports]
+    return sorted([port.device for port in com_ports])
 
 # Function to create a submenu with available COM ports
 def create_com_port_submenu():
