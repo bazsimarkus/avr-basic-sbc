@@ -55,11 +55,54 @@ def start_programming():
             # Send the content to the selected COM port with baud rate 9600
             try:
                 ser = serial.Serial(selected_com_port, baudrate=9600, timeout=5)
-                print(content.encode())
                 ser.write(content.encode())
                 ser.write(b'\x00')  # Terminating zero
                 ser.close()
                 messagebox.showinfo("Success", "Programming successful.\n\nYou can run the loaded program by typing \"RUN\" on the AVR-SBC.")
+            except serial.SerialException as e:
+                messagebox.showerror("Error", f"Failed to send data to COM port: {e}")
+
+# Function to stop programming
+def stop_programming():
+    selected_com_port = selected_port.get()
+    available_com_ports = list_com_ports()
+
+    if selected_com_port == "None":
+        messagebox.showerror("Error", "Please select a COM port.")
+    elif selected_com_port not in available_com_ports:
+        messagebox.showwarning("Warning", "Selected COM port is not available. Resetting to 'None'.")
+        selected_port.set("None")
+    else:
+        result = messagebox.askokcancel("Stop Programming", "This will make the AVR-SBC exit programming mode after typing \"SERLOAD\".\n\nStop programming?")
+        if result:
+            # Send the content to the selected COM port with baud rate 9600
+            try:
+                ser = serial.Serial(selected_com_port, baudrate=9600, timeout=5)
+                ser.write(b'\x00')  # Terminating zero
+                ser.close()
+                messagebox.showinfo("Success", "Programming mode stopped successfully.")
+            except serial.SerialException as e:
+                messagebox.showerror("Error", f"Failed to send data to COM port: {e}")
+
+# Function to stop programming
+def send_test_string():
+    selected_com_port = selected_port.get()
+    available_com_ports = list_com_ports()
+
+    if selected_com_port == "None":
+        messagebox.showerror("Error", "Please select a COM port.")
+    elif selected_com_port not in available_com_ports:
+        messagebox.showwarning("Warning", "Selected COM port is not available. Resetting to 'None'.")
+        selected_port.set("None")
+    else:
+        result = messagebox.askokcancel("Send Test String", "A test string will be sent to the AVR-SBC serial port.\n\nThe test string: ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890\n\nSend test string?")
+        if result:
+            # Send the content to the selected COM port with baud rate 9600
+            try:
+                ser = serial.Serial(selected_com_port, baudrate=9600, timeout=5)
+                ser.write("ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890\n".encode())  # Test string.
+                ser.close()
+                messagebox.showinfo("Success", "Test string sent successfully.")
             except serial.SerialException as e:
                 messagebox.showerror("Error", f"Failed to send data to COM port: {e}")
 
@@ -262,6 +305,9 @@ com_port_menu = tk.Menu(program_menu,postcommand=create_com_port_submenu)
 program_menu.add_cascade(label="Select COM port (None)", menu=com_port_menu)
 program_menu.add_separator()
 program_menu.add_command(label="Start programming", command=start_programming)
+program_menu.add_command(label="Stop programming", command=stop_programming)
+program_menu.add_separator()
+program_menu.add_command(label="Send test string", command=send_test_string)
 # Bind the <<MenuSelect>> event to the create_com_port_submenu function
 program_menu.bind("<<Button-1>>", create_com_port_submenu)
 
