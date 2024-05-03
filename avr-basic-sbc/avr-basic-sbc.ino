@@ -2344,22 +2344,29 @@ serprint:
 serread:
   {
     if(isSerial1Open){
-    while (!Serial1.available()) {} // Wait until data is available
+      unsigned long timeout = 1000; // Set your timeout value (in milliseconds)
 
-    while (true) { // Loop indefinitely
-      char incomingChar = Serial1.read(); // Read the incoming character
+      while (true) { // Loop indefinitely
+        unsigned long startTime = millis();
+        while (!Serial1.available() && ((millis() - startTime) <= timeout)) {} // Wait until data is available or timeout
 
-      if (incomingChar == '\n') { // Check for LF
-        break; // Exit the loop if LF is received
-      } else {
-        // Check if the incoming character is a human-readable ASCII character
-        if (incomingChar >= 32 && incomingChar <= 126) {
-          outchar( incomingChar );
+        if ((millis() - startTime) > timeout) {
+          // Timeout occurred, handle it here
+          break; // For example, you can break the loop
+        }
+
+        char incomingChar = Serial1.read(); // Read the incoming character
+
+        if (incomingChar == '\n') { // Check for LF
+          line_terminator();
+          break; // Exit the loop if LF is received
+        } else {
+          // Check if the incoming character is a human-readable ASCII character
+          if (incomingChar >= 32 && incomingChar <= 126) {
+            outchar( incomingChar );
+          }
+        }
       }
-      }
-      while (!Serial1.available()) {} // Wait until data is available
-    }
-     line_terminator();
     }
   }
   goto run_next_statement;
