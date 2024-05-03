@@ -2352,7 +2352,10 @@ serread:
       if (incomingChar == '\n') { // Check for LF
         break; // Exit the loop if LF is received
       } else {
-        outchar( incomingChar );
+        // Check if the incoming character is a human-readable ASCII character
+        if (incomingChar >= 32 && incomingChar <= 126) {
+          outchar( incomingChar );
+      }
       }
       while (!Serial1.available()) {} // Wait until data is available
     }
