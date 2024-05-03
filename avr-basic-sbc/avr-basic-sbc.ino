@@ -2344,27 +2344,16 @@ serprint:
 serread:
   {
     if(isSerial1Open){
-    const int numChars = 32;
-    char receivedChars[numChars];   // an array to store the received data
-    int charIndex = 0; // Index for storing characters in the array
-
     while (!Serial1.available()) {} // Wait until data is available
 
     while (true) { // Loop indefinitely
       char incomingChar = Serial1.read(); // Read the incoming character
 
-      if (incomingChar == '\r' || incomingChar == '\n') { // Check for CR or LF
-        receivedChars[charIndex] = '\0'; // Null-terminate the string
-        break; // Exit the loop if CR or LF is received
+      if (incomingChar == '\n') { // Check for LF
+        break; // Exit the loop if LF is received
       } else {
-        receivedChars[charIndex] = incomingChar; // Store the received character
-        charIndex++; // Increment the index
         outchar( incomingChar );
-        if (charIndex >= numChars) { // Check if the buffer is full
-          break; // Exit the loop if buffer is full
-        }
       }
-
       while (!Serial1.available()) {} // Wait until data is available
     }
      line_terminator();
