@@ -21,7 +21,7 @@
 //#####################################################################################
 // DEFINES
 //#####################################################################################
-#define kVersion              "v0.18"
+#define kVersion              "v0.20"
 #define ARDUINO               1
 #define FONTS                 6         // 6 = 6x8, 8 = 8x8
 #define kPiezoPin             15
@@ -105,14 +105,13 @@ File fp;
 // #############################################################################################################
 // STRINGS
 // #############################################################################################################
-//static const char *  sentinel = "  **** AVR Tiny Basic PLUS ****   ";
 static const unsigned char sentinel[]            PROGMEM = "  **** AVR Tiny Basic PLUS ****   ";
 static const unsigned char okmsg[]            PROGMEM = "READY.";
 static const unsigned char syntaxmsg[]        PROGMEM = "Syntax Error";
 static const unsigned char invalidexprmsg[]   PROGMEM = "Invalid expression";
 static const unsigned char badlinemsg[]       PROGMEM = "Invalid line number";
 static const unsigned char notenoughmem[]     PROGMEM = "Not enough memory!";
-static const unsigned char initmsg[]          PROGMEM = "16K SRAM SYSTEM  ATMega1284 " kVersion;
+static const unsigned char initmsg[]          PROGMEM = "16K SRAM SYSTEM ATMega1284P " kVersion;
 static const unsigned char memorymsg[]        PROGMEM = " BASIC bytes free.";
 
 static const unsigned char eeprommsg[]        PROGMEM = " EEProm bytes.";
@@ -128,7 +127,6 @@ static const unsigned char sdfilemsg[]        PROGMEM = "SD file error.";
 static const unsigned char dirextmsg[]        PROGMEM = "(dir)";
 static const unsigned char slashmsg[]         PROGMEM = "/";
 static const unsigned char spacemsg[]         PROGMEM = " ";
-//static const unsigned char infomsg[]          PROGMEM = "(C) 2023 Dominik Kristen";
 static const unsigned char format[]           PROGMEM = "Formating...";
 static const unsigned char prozentsign[]      PROGMEM = "%";
 
