@@ -1,0 +1,34 @@
+10 REM MazeGame
+20 REM This program is a simple maze game where the player (a character P) navigates through the display to reach a randomly placed goal (a character G).
+30 REM Author: Balazs Markus
+40 CLS
+50 X = 20
+60 Y = 20
+70 A = RND(20)*10
+80 B = RND(20)*10
+90 DRAWCHAR X,Y,P
+100 DRAWCHAR A,B,G
+110 PRINT "Use 8,2,4,6"
+120 INCHRN M
+130 IF M = 8 THEN GOTO 180
+140 IF M = 2 THEN GOTO 200
+150 IF M = 4 THEN GOTO 220
+160 IF M = 6 THEN GOTO 240
+170 IF M!=8 THEN IF M!=2 THEN IF M!=4 THEN IF M!=6 THEN CLS:END
+180 IF Y > 0 THEN Y = Y - 10
+190 GOTO 260
+200 IF Y < 212 THEN Y = Y + 10
+210 GOTO 260
+220 IF X > 0 THEN X = X - 10
+230 GOTO 260
+240 IF X < 197 THEN X = X + 10
+250 GOTO 260
+260 CLS
+270 DRAWCHAR X,Y,P
+280 DRAWCHAR A,B,G
+290 IF X = A THEN IF Y = B THEN GOTO 310
+300 GOTO 110
+310 CLS
+320 PRINT "You reached the goal!"
+330 PRINT "Game Over"
+340 END
