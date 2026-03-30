@@ -1,0 +1,13 @@
+10 CLS
+20 ' -- Spirograph-like line pattern --
+30 FOR I = 0 TO 319 STEP 4
+40 DRAWLINE I, 0, 319-I, 239, 1
+50 NEXT I
+60 FOR I = 0 TO 239 STEP 4
+70 DRAWLINE 0, I, 319, 239-I, 1
+80 NEXT I
+90 ' -- Add center circle --
+100 DRAWCIRC 160, 120, 60, 1, 0
+110 DRAWCIRC 160, 120, 40, 1, 0
+120 DRAWCIRC 160, 120, 20, 1, 0
+140 END

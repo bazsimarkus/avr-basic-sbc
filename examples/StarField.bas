@@ -1,0 +1,17 @@
+10 CLS
+20 RSEED 0
+30 ' -- draw initial star field --
+40 FOR I = 1 TO 80
+50 X = RND(320)
+60 Y = RND(240)
+70 DRAWPIX X, Y, 1
+80 NEXT I
+100 ' -- twinkle loop --
+110 X = RND(320)
+120 Y = RND(240)
+130 DRAWPIX X, Y, 2
+140 X = RND(320)
+150 Y = RND(240)
+160 DRAWPIX X, Y, 2
+170 DELAY 50
+180 GOTO 100

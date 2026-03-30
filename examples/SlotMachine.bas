@@ -1,0 +1,45 @@
+10 CLS
+20 PRINT "=== SLOT MACHINE ==="
+30 PRINT
+40 S = 100
+50 RSEED 0
+100 PRINT "Credits: ",S
+110 IF S < 1 GOTO 400
+120 PRINT "Bet 10 credits? (1=yes 0=no)"
+130 INPUT B
+140 IF B = 0 GOTO 500
+150 S = S - 10
+160 ' -- spin 3 reels (1-6) --
+170 A = RND(6) + 1
+180 B = RND(6) + 1
+190 C = RND(6) + 1
+200 PRINT
+210 PRINT "[ ",A," | ",B," | ",C," ]"
+220 TONEW 600, 80
+230 ' -- check wins --
+240 IF A = B GOTO 300
+250 IF A = C GOTO 300
+260 IF B = C GOTO 300
+270 PRINT "No match. Try again!"
+280 PRINT
+290 GOTO 100
+300 ' -- at least a pair --
+310 IF A = B GOTO 320
+315 GOTO 330
+320 IF B = C GOTO 350
+330 PRINT "** PAIR! Win 20! **"
+340 S = S + 20
+345 TONEW 800, 150
+346 PRINT
+347 GOTO 100
+350 PRINT "*** TRIPLE! Win 100! ***"
+360 S = S + 100
+370 TONEW 1200, 300
+380 PRINT
+390 GOTO 100
+400 PRINT
+410 PRINT "GAME OVER - No credits!"
+420 END
+500 PRINT "Final credits: ",S
+510 PRINT "Thanks for playing!"
+520 END

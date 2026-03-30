@@ -1,0 +1,10 @@
+10 CLS
+20 RSEED 0
+100 X = RND(280)
+110 Y = RND(200)
+120 W = RND(80) + 10
+130 H = RND(60) + 10
+140 ' -- use XOR for cool overlaps --
+150 DRAWRECT X, Y, W, H, 2, 2
+160 DELAY 80
+170 GOTO 100
