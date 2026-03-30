@@ -13,9 +13,9 @@
  * break codes (key-release), and applies the selected keyboard layout table.
  *
  * Layout selection (compile-time, via -D flag or this header):
- *   -DKB_LAYOUT_EN  US/English QWERTY
+ *   -DKB_LAYOUT_EN  US/English QWERTY  (default if none specified)
  *   -DKB_LAYOUT_DE  German QWERTZ
- *   -DKB_LAYOUT_HU  Hungarian QWERTZ  (default if none specified)
+ *   -DKB_LAYOUT_HU  Hungarian QWERTZ
  */
 #ifndef KEYBOARD_H
 #define KEYBOARD_H
@@ -28,16 +28,16 @@
  * Define exactly ONE of the following before including this header,
  * or pass it on the compiler command-line:
  *
- *   -DKB_LAYOUT_EN   Standard US/English layout
+ *   -DKB_LAYOUT_EN   Standard US/English layout  <-- DEFAULT
  *   -DKB_LAYOUT_DE   Standard German (QWERTZ) layout
- *   -DKB_LAYOUT_HU   Standard Hungarian (QWERTZ) layout  <-- DEFAULT
+ *   -DKB_LAYOUT_HU   Standard Hungarian (QWERTZ) layout
  *
  * Example (compiler flag):
  *   avr-gcc ... -DKB_LAYOUT_DE ...
  * -------------------------------------------------------------------------- */
 
 #if !defined(KB_LAYOUT_EN) && !defined(KB_LAYOUT_DE) && !defined(KB_LAYOUT_HU)
-#  define KB_LAYOUT_HU   /* Hungarian is the default layout */
+#  define KB_LAYOUT_EN   /* US/English QWERTY is the default layout */
 #endif
 
 /* keyboard_init(): Configure USART0 as a PS/2 synchronous slave receiver.

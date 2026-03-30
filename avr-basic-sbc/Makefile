@@ -4,10 +4,10 @@
 #
 #  QUICK REFERENCE - common build commands:
 #
-#    make                   	Build with the default keyboard layout (Hungarian)
-#    make KB_LAYOUT=EN      	Build with US/English QWERTY layout
+#    make                   	Build with the default keyboard layout (US/English)
+#    make KB_LAYOUT=EN      	Build with US/English QWERTY layout (default)
 #    make KB_LAYOUT=DE      	Build with German QWERTZ layout
-#    make KB_LAYOUT=HU      	Build with Hungarian QWERTZ layout (default)
+#    make KB_LAYOUT=HU      	Build with Hungarian QWERTZ layout
 #
 #    make en                	Shorthand alias for KB_LAYOUT=EN
 #    make de                	Shorthand alias for KB_LAYOUT=DE
@@ -84,14 +84,14 @@ OBJCOPY = avr-objcopy
 #  The keyboard driver (keyboard.h / keyboard.c) uses this
 #  flag to select the correct PS/2 Set-2 scan-code table:
 #
-#    EN  -  US/English QWERTY
+#    EN  -  US/English QWERTY (default if not specified)
 #    DE  -  German QWERTZ
-#    HU  -  Hungarian QWERTZ  (default if not specified)
+#    HU  -  Hungarian QWERTZ
 #
 #  Override on the command line:
 #    make KB_LAYOUT=DE
 # ------------------------------------------------------------
-KB_LAYOUT ?= HU
+KB_LAYOUT ?= EN
 KB_FLAG    = -DKB_LAYOUT_$(KB_LAYOUT)
 
 
