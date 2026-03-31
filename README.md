@@ -145,7 +145,7 @@ The full KiCad project including schematic, PCB, and Gerber files is available i
 | J1 | 1 | DC barrel jack 2.1mm (DC-005) |
 | J2 | 1 | PS/2 keyboard connector (Mini-DIN 6) |
 | J3 | 1 | RCA video jack |
-| J4–J7 | 4 | Pin headers - Port B, A, C, D GPIO |
+| J4-J7 | 4 | Pin headers - Port B, A, C, D GPIO |
 | J8 | 1 | 2×5 pin header - USBasp ISP |
 | J9 | 1 | 2×4 pin header - power output |
 
@@ -158,17 +158,17 @@ The firmware uses **MightyCore-style** pin numbering for the ATmega1284P, which 
 | Pin | Port | Function | Available? |
 |-----|------|----------|------------|
 | 0 | PB0 | PS/2 keyboard clock | ✗ reserved |
-| 1–3 | PB1–PB3 | GPIO (J4) | ✓ |
-| 4–7 | PB4–PB7 | SPI - EEPROM /CS, MOSI, MISO, SCK | shared |
+| 1-3 | PB1-PB3 | GPIO (J4) | ✓ |
+| 4-7 | PB4-PB7 | SPI - EEPROM /CS, MOSI, MISO, SCK | shared |
 | 8 | PD0 | PS/2 keyboard data | ✗ reserved |
 | 9 | PD1 | UART1 TX | ✓ |
 | 10 | PD2 | UART1 RX | ✓ |
-| 11–12 | PD3–PD4 | GPIO (J7) | ✓ |
+| 11-12 | PD3-PD4 | GPIO (J7) | ✓ |
 | 13 | PD5 | Video sync output | ✗ reserved |
 | 14 | PD6 | Yellow LED | ✓ |
 | 15 | PD7 | Buzzer / OC2A | ✓ |
-| 16–23 | PC0–PC7 | GPIO (J6) - fully free | ✓ |
-| 24–30 | PA0–PA6 | GPIO (J5) - exposed on header, but see note | ⚠ see note |
+| 16-23 | PC0-PC7 | GPIO (J6) - fully free | ✓ |
+| 24-30 | PA0-PA6 | GPIO (J5) - exposed on header, but see note | ⚠ see note |
 | 31 | PA7 | Video data output | ✗ reserved |
 
 > **Note on PORTA:** The high-resolution line rendering routine writes pixel data to the entire PORTA register using the AVR `OUT` instruction (1 cycle, cycle-exact timing). This means the whole port is effectively owned by the video system at runtime. The pins are physically accessible on the J5 header, but using them as GPIO will corrupt the video output. PORTC is the recommended alternative for free GPIO pins.
@@ -221,26 +221,140 @@ The text terminal layer (`text.c`) sits on top of the graphics library and provi
 
 The firmware is almost a direct port of **TinyBASIC**, originally written by Gordon Brandly as *68000 Tiny Basic*, then ported to C by Michael Field as *Arduino Basic*, and further developed by Scott Lawrence as *TinyBasicPlus*. I adapted it to be fully AVR C based - no Arduino framework anywhere.
 
-The BASIC command set includes everything you would expect, plus a bunch of hardware-specific extensions:
-
-| Category | Commands |
-|----------|----------|
-| Core | `PRINT`, `INPUT`, `LET`, `IF`/`THEN`, `GOTO`, `GOSUB`, `RETURN`, `FOR`/`TO`/`STEP`/`NEXT`, `END`, `STOP`, `REM` |
-| Program | `RUN`, `LIST`, `NEW`, `LOAD`, `SAVE` |
-| GPIO | `DWRITE`, `DREAD`, `AWRITE`, `AREAD` |
-| Graphics | `DRAWPIX`, `DRAWLINE`, `DRAWRECT`, `DRAWCIRC`, `DRAWCHAR`, `GETPIX`, `CLS` |
-| Sound | `TONE`, `TONEW`, `NOTONE` |
-| Timing | `DELAY` |
-| Internal EEPROM | `ESAVE`, `ELOAD`, `ELIST`, `EFORMAT`, `EPOKE`, `EPEEK` |
-| External EEPROM | `XSAVE`, `XLOAD`, `XLIST`, `XFORMAT`, `XPOKE`, `XPEEK` |
-| Serial | `SEROPEN`, `SERCLOSE`, `SERPRINT`, `SERREAD`, `SERLOAD` |
-| Misc | `INKEY`, `MEM`, `RSEED`, `DELAY`, `PEEK`, `POKE` |
-
 On startup, the board displays a splash screen with the firmware version and available memory, then drops into the interactive `>` prompt.
 
 <p align="center">
   <img src="docs/images/screenshots/boot-screen.png" alt="AVR-SBC Boot Screen"/>
 </p>
+
+The BASIC command set includes everything you would expect, plus a bunch of hardware-specific extensions:
+
+#### Core Commands
+
+| Command | Description | Example |
+|---------|-------------|---------|
+| `PRINT expr, expr, ...` | Prints expressions (strings or numbers) to the screen. Items separated by `,`. End with `;` to suppress newline. `?` is a shorthand alias. | `PRINT "HELLO", X` |
+| `INPUT var` | Prompts the user with `?` and reads a numeric value into variable `var` (A-Z). | `INPUT A` |
+| `LET var = expr` | Assigns the value of an expression to a variable (A-Z). The `LET` keyword is optional. | `LET X = 42` or `X = 42` |
+| `IF expr THEN statement` | Evaluates expression; if non-zero, executes the statement after `THEN`. `THEN` is optional. Relational operators: `=`, `<>`, `!=`, `<`, `>`, `<=`, `>=`. | `IF X > 10 THEN PRINT "BIG"` |
+| `GOTO expr` | Jumps to the line number given by the expression. | `GOTO 100` |
+| `GOSUB expr` | Calls the subroutine at the given line number, pushing a return address onto the stack. | `GOSUB 500` |
+| `RETURN` | Returns from the most recent `GOSUB` call. | `RETURN` |
+| `FOR var = expr TO expr [STEP expr]` | Begins a counting loop. Variable iterates from start to end value. `STEP` defaults to 1 if omitted. | `FOR I = 1 TO 10 STEP 2` |
+| `NEXT var` | Advances the `FOR` loop variable and branches back if the loop has not finished. | `NEXT I` |
+| `END` | Stops program execution and returns to the prompt. | `END` |
+| `STOP` | Same as `END` - stops program execution. | `STOP` |
+| `REM text` | Comment line; everything after `REM` (or `'`) is ignored. | `REM THIS IS A COMMENT` |
+
+#### Program Management
+
+| Command | Description | Example |
+|---------|-------------|---------|
+| `RUN` | Executes the stored program from the first line. | `RUN` |
+| `LIST [linenum]` | Lists the stored program. If a line number is given, listing starts from that line. | `LIST` or `LIST 100` |
+| `NEW` | Erases the stored program from memory. | `NEW` |
+| `LOAD` | Loads a program (stub - unimplemented on this platform). | `LOAD` |
+| `SAVE` | Saves a program (stub - unimplemented on this platform). | `SAVE` |
+| `CHAIN` | Loads a program and auto-runs it after loading (stub - unimplemented on this platform). | `CHAIN` |
+| `MEM` | Prints the number of free BASIC program bytes and EEPROM usage statistics. | `MEM` |
+| `BYE` | Exits the BASIC interpreter. | `BYE` |
+
+#### GPIO
+
+| Command | Description | Example |
+|---------|-------------|---------|
+| `DWRITE pin, value` | Sets a digital GPIO pin HIGH or LOW. Value can be `HIGH`/`HI`, `LOW`/`LO`, or a numeric expression (0/1). Uses MightyCore pin numbering. | `DWRITE 14, 1` |
+| `AWRITE pin, value` | Writes an analog (PWM) value to a GPIO pin. Same syntax as `DWRITE`. | `AWRITE 14, 128` |
+| `DREAD(pin)` | Function - reads a digital pin and returns 1 (HIGH) or 0 (LOW). Enables the internal pull-up resistor. | `X = DREAD(16)` |
+| `AREAD(pin)` | Function - reads an analog value (0-1023) from an ADC pin (pins 24-30 only). | `X = AREAD(24)` |
+
+#### Graphics
+
+| Command | Description | Example |
+|---------|-------------|---------|
+| `DRAWPIX x, y, c` | Draws a single pixel at (x, y) with draw mode `c` (0=clear, 1=set, 2=xor). | `DRAWPIX 160, 120, 1` |
+| `DRAWLINE x0, y0, x1, y1, c` | Draws a line from (x0, y0) to (x1, y1) with draw mode `c`. | `DRAWLINE 0, 0, 319, 239, 1` |
+| `DRAWRECT x, y, w, h, c, f` | Draws a rectangle at (x, y) with width `w` and height `h`. Outline uses draw mode `c`, fill uses draw mode `f`. Use -1 for `f` to draw outline only. | `DRAWRECT 10, 10, 50, 30, 1, 1` |
+| `DRAWCIRC cx, cy, r, c, f` | Draws a circle centered at (cx, cy) with radius `r`. Outline uses draw mode `c`, fill uses draw mode `f`. Use -1 for `f` to draw outline only. | `DRAWCIRC 160, 120, 40, 1, 0` |
+| `DRAWCHAR x, y, char` | Draws a single 8×8 character at pixel position (x, y). The character is the literal next character in the source. | `DRAWCHAR 10, 10, A` |
+| `GETPIX x, y` | Prints the pixel value (0 or 1) at position (x, y) to the screen. | `GETPIX 100, 50` |
+| `CLS` | Clears the entire screen and resets the text cursor. | `CLS` |
+
+#### Sound
+
+| Command | Description | Example |
+|---------|-------------|---------|
+| `TONE freq, duration` | Starts playing a tone at `freq` Hz for `duration` ms on the buzzer. Execution continues immediately. | `TONE 440, 500` |
+| `TONEW freq, duration` | Plays a tone at `freq` Hz for `duration` ms and **waits** until the tone finishes before continuing. | `TONEW 440, 500` |
+| `NOTONE` | Immediately stops any tone currently playing. | `NOTONE` |
+
+#### Timing
+
+| Command | Description | Example |
+|---------|-------------|---------|
+| `DELAY expr` | Pauses execution for the given number of milliseconds. Breakable with ESC or Ctrl-C. | `DELAY 1000` |
+
+#### Internal EEPROM (4 KB)
+
+| Command | Description | Example |
+|---------|-------------|---------|
+| `ESAVE` | Saves the current program to internal EEPROM. | `ESAVE` |
+| `ELOAD` | Loads a program from internal EEPROM into RAM. | `ELOAD` |
+| `ELIST` | Lists the contents of the internal EEPROM to the screen. | `ELIST` |
+| `EFORMAT` | Erases the entire internal EEPROM (fills with zeros). | `EFORMAT` |
+| `EPOKE value, addr` | Writes `value` (byte) to internal EEPROM at address `addr`. | `EPOKE 65, 0` |
+| `EPEEK var, addr` | Reads a byte from internal EEPROM at address `addr` into variable `var` (A-Z). | `EPEEK A, 0` |
+
+#### External EEPROM (8 KB - 25LC640)
+
+| Command | Description | Example |
+|---------|-------------|---------|
+| `XSAVE` | Saves the current program to external SPI EEPROM. | `XSAVE` |
+| `XLOAD` | Loads a program from external EEPROM into RAM. | `XLOAD` |
+| `XLIST` | Lists the contents of the external EEPROM to the screen. | `XLIST` |
+| `XFORMAT` | Erases the entire external EEPROM (fills with zeros). | `XFORMAT` |
+| `XPOKE value, addr` | Writes `value` (byte) to external EEPROM at address `addr`. | `XPOKE 65, 0` |
+| `XPEEK var, addr` | Reads a byte from external EEPROM at address `addr` into variable `var` (A-Z). | `XPEEK A, 0` |
+
+#### Serial (UART1)
+
+| Command | Description | Example |
+|---------|-------------|---------|
+| `SEROPEN` | Opens UART1 at 9600 baud for serial communication. | `SEROPEN` |
+| `SERCLOSE` | Closes UART1. | `SERCLOSE` |
+| `SERPRINT expr, expr, ...` | Sends expressions (strings or numbers) over UART1. Same syntax as `PRINT`. | `SERPRINT "HELLO"` |
+| `SERREAD` | Reads and displays characters from UART1 until a newline or 5-second timeout. | `SERREAD` |
+| `SERLOAD` | Loads a BASIC program from UART1 into RAM (used for PC upload via SBC Studio). | `SERLOAD` |
+
+#### Miscellaneous
+
+| Command | Description | Example |
+|---------|-------------|---------|
+| `INKEY var` | Non-blocking keyboard read. Stores the ASCII value of the pressed key into variable `var` (A-Z), or 0 if no key is pressed. | `INKEY K` |
+| `RSEED expr` | Seeds the random number generator with the given value. | `RSEED 42` |
+| `POKE addr, value` | Writes `value` (byte) to RAM address `addr` within the BASIC memory buffer. | `POKE 0, 65` |
+| `PEEK(addr)` | Function - reads a byte from RAM address `addr` within the BASIC memory buffer. | `X = PEEK(0)` |
+| `ABS(expr)` | Function - returns the absolute value of the expression. | `X = ABS(-5)` |
+| `RND(expr)` | Function - returns a random integer from 0 to `expr`-1. | `X = RND(100)` |
+
+#### Operators
+
+| Operator | Description |
+|----------|-------------|
+| `+`, `-`, `*`, `/` | Arithmetic: addition, subtraction, multiplication, integer division |
+| `=`, `<>`, `!=`, `<`, `>`, `<=`, `>=` | Relational operators (return 1 if true, 0 if false) |
+| `-expr` | Unary negation |
+| `(expr)` | Parentheses for grouping |
+
+#### Notes:
+
+- Line numbers are required for stored programs (e.g. `10`, `20`, `30`). Direct commands can be typed without a line number.
+- Variables: single uppercase letters `A`-`Z`, 16-bit signed integers (-32768 to 32767)
+- Strings in double or single quotes: `"HELLO"` or `'HELLO'`
+- Multiple statements per line separated by `:` - e.g. `10 A=1 : B=2 : PRINT A+B`
+- Screen resolution: 320×240 pixels (x: 0-319, y: 0-239)
+- Program RAM: 5500 bytes total
+- Break execution at any time with **ESC** or **Ctrl-C**
 
 ---
 
@@ -490,7 +604,7 @@ The board works, and it works reliably. But it is not perfect, and I know exactl
 
 **No Schottky diode on the ISP header** - to prevent back-feeding the microcontroller through the programmer's VCC pin, I simply left the 5V pin on the ISP header unconnected. It works, but a proper Schottky diode would be a cleaner solution. As it stands, the board must always be powered through the DC barrel jack when programming.
 
-**PORTA reserved by the video system** - as described in the Firmware section, the cycle-exact line rendering routine writes to the entire PORTA register using the AVR `OUT` instruction. This means PA0–PA6 cannot be used as GPIO without corrupting the video output, even though the pins are physically accessible on the J5 header. Getting 320×240 resolution with proper timing while also making PORTA available as GPIO is an unsolved problem for this project. If you have an idea, I would love to hear it.
+**PORTA reserved by the video system** - as described in the Firmware section, the cycle-exact line rendering routine writes to the entire PORTA register using the AVR `OUT` instruction. This means PA0-PA6 cannot be used as GPIO without corrupting the video output, even though the pins are physically accessible on the J5 header. Getting 320×240 resolution with proper timing while also making PORTA available as GPIO is an unsolved problem for this project. If you have an idea, I would love to hear it.
 
 ---
 
